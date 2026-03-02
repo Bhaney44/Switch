@@ -1,0 +1,123 @@
+#pragma version 10
+txn ApplicationID
+int 0
+==
+bnz main_l12
+txn OnCompletion
+int OptIn
+==
+bnz main_l11
+gtxn 1 TypeEnum
+int pay
+==
+gtxn 1 Amount
+int 100000
+>=
+&&
+gtxn 1 Receiver
+global CurrentApplicationAddress
+==
+&&
+bnz main_l10
+gtxn 1 TypeEnum
+int axfer
+==
+gtxn 1 XferAsset
+int 297995609
+==
+&&
+gtxn 1 AssetReceiver
+global CurrentApplicationAddress
+==
+&&
+gtxn 1 AssetAmount
+int 1000
+==
+&&
+bnz main_l7
+int 1
+bnz main_l6
+err
+main_l6:
+int 0
+return
+main_l7:
+global Round
+itob
+global LatestTimestamp
+itob
+concat
+sha256
+extract 0 8
+btoi
+int 3
+%
+int 1
++
+store 0 // store random_val (1-3) to scratch 0
+load 0
+int 1
+==
+bnz main_l9 // burn
+load 0
+int 2
+==
+bnz main_l8 // win
+// lose (3: smart contract wins)
+itxn_begin
+int axfer
+itxn_field TypeEnum
+int 297995609
+itxn_field XferAsset
+txn Sender
+itxn_field AssetReceiver
+int 0
+itxn_field AssetAmount
+itxn_submit
+int 1
+return
+main_l8: // win
+itxn_begin
+int axfer
+itxn_field TypeEnum
+int 297995609
+itxn_field XferAsset
+txn Sender
+itxn_field AssetReceiver
+int 2000
+itxn_field AssetAmount
+itxn_submit
+int 1
+return
+main_l9: // burn
+itxn_begin
+int axfer
+itxn_field TypeEnum
+int 297995609
+itxn_field XferAsset
+addr AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY5HFKQ
+itxn_field AssetReceiver
+int 1000
+itxn_field AssetAmount
+itxn_submit
+int 1
+return
+main_l10:
+itxn_begin
+int axfer
+itxn_field TypeEnum
+int 297995609
+itxn_field XferAsset
+global CurrentApplicationAddress
+itxn_field AssetReceiver
+int 0
+itxn_field AssetAmount
+itxn_submit
+int 1
+return
+main_l11:
+int 1
+return
+main_l12:
+int 1
+return
